@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+
+    <link rel="stylesheet" href="./lib/codemirror.css">
+    <link rel="stylesheet" href="./theme/night.css">
+    <link rel="stylesheet" href="./addon/hint/show-hint.css">
+
+    <script src="./lib/codemirror.js"></script>
+    <script src="./mode/python/python.js"></script>
+    <script src="./addon/display/placeholder.js"></script>
+    <script src="./addon/hint/show-hint.js"></script>
+    <style>
+        .CodeMirror {
+            height: 420px !important;
+        }
+    </style>
+</head>
+
+<body>
+<textarea id="code" name="code" rows="5"></textarea>
+
+<script>
+    const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: 'python',
+        theme: "night",
+        lineNumbers: true,
+        smartIndent: true,
+        indentUnit: 4,
+        autofocus: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+    });
+    editor.on('keypress', function(){
+        editor.showHint()
+    })
+
+    const codeContent = editor.getValue()
+    // post http://localhost:5500/api/runcode
+    // 后台codeContent写入code.py,然后执行python code.py
+    // console.log(editor.getTextArea().value)
+
+</script>
+</body>
+</html>

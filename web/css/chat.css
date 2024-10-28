@@ -1,0 +1,29 @@
+.chat-container {
+    background-color: #595959;
+    height: calc(100vh - 60px);
+}
+
+.chat-content {
+    height: 100%;
+    overflow-y: scroll;
+}
+.chat-content .row{
+    display: flex;
+    justify-content: space-between;
+    padding:10px
+}
+.chat-content .row div{
+    width: 45%;
+    background-color: #404040;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+}
+
+.send-chat {
+    position: fixed;
+    bottom: 15px;
+    width: 70%;
+    left: 340px;
+}
+

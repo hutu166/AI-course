@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learning Progress</title>
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+
+  <style>
+    .el-card{
+        width: 98%;
+    }
+    .container {
+        margin: 30px;
+    }
+    h1 {
+        font-size: 30px;
+    }
+  </style>
+
+</head>
+
+<body>
+<div id="app">
+  <el-container>
+    <el-aside width="200px">
+      <div class="logo-text">ONES</div>
+      <ai-menu active="learningProgress"></ai-menu>
+    </el-aside>
+    <el-container>
+      <el-header>
+        <ai-header>Browse your progress here</ai-header>
+      </el-header>
+      <el-main>
+        <div class="container">
+          <e-row :gutter="40">
+            <el-col :span="12">
+              <el-card>
+                <h1>Total completion</h1>
+                <el-row>
+                  Completed the following courses:
+                </el-row>
+                <el-row v-for="item in courseList">
+                  {{item.name}}
+                  <span v-if="item.is_complete === 'Y'" style="color: green;margin-left: 20px;">
+                    <i class="el-icon-success" style="font-size: 20px;"></i> Completed
+                  </span>
+                </el-row>
+              </el-card>
+            </el-col>
+            <el-col :span="12">
+              <el-card>
+                <h1>AI Recommendation</h1>
+                <el-row v-for="item in courseList" v-if="item.recommend">
+                  <div v-html="item.recommend"></div>
+                </el-row>
+              </el-card>
+            </el-col>
+          </e-row>
+        </div>
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script src="js/ai-component.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        courseList: [],
+      }
+    },
+    created() {
+      this.getList()
+    },
+    mounted() {
+    },
+    watch: {
+    },
+    methods: {
+      getList() {
+        fetchGet('/courses?userId='+localStorage.getItem('userId')).then(data => {
+          this.courseList = data.data
+        })
+      },
+    }
+  })
+</script>
+</body>
+
+</html>

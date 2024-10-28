@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    #app {
+      padding: 20px;
+    }
+    h1{
+      font-size:42px;
+      margin: 0;
+    }
+    .container{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .desc1{
+      width: 380px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .desc2{
+      font-size: 12px;
+      width: 590px;
+      text-align: center;
+    }
+    .cover {
+      width: 450px;
+      margin-top: 10px;
+    }
+    body{
+      background: linear-gradient(to bottom, white 0%,white 55%, #CFF2F5 55%, #CFF2F5 100%);
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+<div id="app">
+  <el-row>
+    <el-col :span="15" :offset="4">
+      <span class="logo-text">ONES</span>
+    </el-col>
+    <el-col :span="5">
+      <el-button type="primary" size="mini" class="bg-black" round @click="openLogin">Login</el-button>
+    </el-col>
+  </el-row>
+
+  <el-row>
+    <el-col :span="14" :offset="5" class="container">
+      <h1>Powerful AI-driven learning website</h1>
+      <div class="desc1">
+        Empower the learning process with AI technology and experience an unprecedented learning process.
+      </div>
+      <el-button type="primary" size="mini" class="bg-btn-green" round @click="openLogin">Start</el-button>
+      <img class="cover" src="./image/cover.png">
+      <div style="font-weight: bold; font-size: 24px; margin-top: 6px;">
+        Using AI to help learning
+      </div>
+      <div class="desc2">
+        AI provides automated and powerful assistance functions to help understand concepts and complete coding work. This website also provides other powerful functions, including but not limited to AI intelligent analysis of learning progress and practice project generator.
+      </div>
+    </el-col>
+  </el-row>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+
+      }
+    },
+    created() {
+    },
+    methods: {
+      openLogin() {
+        window.location.href = "login.html";
+      }
+    }
+  })
+</script>
+</body>
+
+</html>

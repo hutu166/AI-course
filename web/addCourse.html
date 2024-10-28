@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course Management</title>
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/course.css"/>
+</head>
+
+<body>
+<div id="app">
+  <el-container>
+    <el-aside width="200px">
+      <div class="logo-text">ONES</div>
+      <ai-menu active="addCourse"></ai-menu>
+    </el-aside>
+    <el-container>
+      <el-header>
+        <ai-header>Upload your course content</ai-header>
+      </el-header>
+      <el-main>
+        <div class="course-container">
+          <e-row>
+            <el-col :span="12">
+              <h3>Add New Week</h3>
+              <el-form ref="form" :model="form" label-width="160px">
+                <el-form-item label="Week">
+                  <el-input v-model="form.name" style="width: 90%;"></el-input>
+                </el-form-item>
+                <!--<el-form-item label="Upload Lecture PPT">
+                  <el-upload
+                      class="upload-demo"
+                      drag
+                      :on-success="handleLectureSuccess"
+                      accept=".pdf"
+                      action="http://localhost:5500/upload" >
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">Drag and drop to upload .pdf file or <em>select files</em></div>
+                  </el-upload>
+                </el-form-item>-->
+                <el-form-item label="Lecture Outline">
+                  <el-input type="textarea" style="width: 90%;" rows="15" v-model="form.outline" placeholder="Lecture outline..."></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="onSubmit">Save</el-button>
+                </el-form-item>
+              </el-form>
+            </el-col>
+            <el-col :span="12">
+              <el-table :data="courseList">
+                <el-table-column prop="name" label="Week"></el-table-column>
+                <el-table-column label="Remove" width="100">
+                  <template slot-scope="scope">
+                    <el-button @click="onRemove(scope.row)"  type="danger" plain  size="small">
+                      <i class="el-icon-delete-solid"></i>
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-col>
+          </e-row>
+        </div>
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script src="js/ai-component.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        form: {
+          name: null,
+          outline: null,
+        },
+        courseList: [],
+      }
+    },
+    created() {
+      this.getList()
+    },
+    mounted() {
+    },
+    watch: {
+    },
+    methods: {
+      getList() {
+        fetchGet('/courses').then(data => {
+          this.courseList = data.data.reverse()
+        })
+      },
+      onRemove(row) {
+        fetchPost('/removeCourse', {id: row.id}, 'DELETE').then(data => {
+          if(data.code === 0) {
+            this.$message.success('Course removed successfully');
+            this.getList()
+          } else {
+            this.$message.error('Failed to remove course');
+          }
+        })
+      },
+      onSubmit() {
+        fetchPost('/chat/addCourse', this.form).then(data => {
+          if(data.code === 0) {
+            this.$message.success('Course added successfully');
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            this.$message.error('Failed to add course');
+          }
+        })
+      },
+      handleLectureSuccess(res, file, fileList) {
+        console.log('filename', res.data)
+      },
+    }
+  })
+</script>
+</body>
+
+</html>

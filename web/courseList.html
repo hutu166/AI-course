@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course List</title>
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/course.css"/>
+
+  <link rel="stylesheet" href="./codemirror-5.65.18/lib/codemirror.css">
+  <link rel="stylesheet" href="./codemirror-5.65.18/theme/night.css">
+  <link rel="stylesheet" href="./codemirror-5.65.18/addon/hint/show-hint.css">
+  <style>
+    .CodeMirror {
+      height: 420px !important;
+    }
+    pre {
+      margin-left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+<div id="app">
+  <el-container>
+    <el-aside width="200px">
+      <div class="logo-text">ONES</div>
+      <ai-menu active="courseList"></ai-menu>
+    </el-aside>
+    <el-container>
+      <el-header>
+        <ai-header>Browse your courses here</ai-header>
+      </el-header>
+      <el-main>
+        <div class="course-container">
+          <el-collapse v-model="activeName" accordion @change="onCollapseChange">
+            <el-collapse-item v-for="item in courseList" :name="item.id">
+              <template slot="title">
+                》 {{item.name}}
+                <span v-if="item.is_complete === 'Y'" style="color: green;margin-left: 20px;">
+                  <i class="el-icon-success" style="font-size: 20px;"></i> Completed
+                </span>
+              </template>
+
+              <el-tabs type="border-card" style="margin-top: 20px;">
+
+                <el-tab-pane label="Lecture">
+                  <div style="margin: 6px 0;" v-if="item.is_complete !== 'Y'">
+                    <el-button type="primary" size="mini" class="bg-black" @click="analyze(1, item.id)">Summarize the lecture content</el-button>
+                    <el-button type="primary" size="mini" class="bg-black" @click="analyze(2, item.id)">Create a study plan</el-button>
+                  </div>
+                  <div v-html="item.lecture_md"></div>
+                  <!--                  <iframe v-if="item.lecture_pdf" width="100%" height="500px" :src=`pdfjs-4.7.76/web/viewer.html?pdf=${item.lecture_pdf}`></iframe>-->
+                </el-tab-pane>
+
+                <el-tab-pane label="Tutorial">
+                  <div class="bg-gray tutorial-container">
+                    <div v-html="item.task_desc"></div>
+                  </div>
+
+                  <div v-if="item.is_complete !== 'Y'">
+                    <el-button type="success" size="mini" @click="onRunCode(item.id)">Run Code</el-button>
+                    <el-button type="primary" size="mini" class="bg-black" @click="analyze(3, item.id)">Analyzing the code</el-button>
+                    <el-button type="primary" size="mini" @click="onComplete(item.id)">I have finished</el-button>
+                  </div>
+
+                  <textarea :id="`code-${item.id}`" name="code" rows="5" class="iframe-code"></textarea>
+                  <pre>{{runResult}}</pre>
+                </el-tab-pane>
+
+              </el-tabs>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script src="js/ai-component.js"></script>
+<script src="./codemirror-5.65.18/lib/codemirror.js"></script>
+<script src="./codemirror-5.65.18/mode/python/python.js"></script>
+<script src="./codemirror-5.65.18/addon/display/placeholder.js"></script>
+<script src="./codemirror-5.65.18/addon/hint/show-hint.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        activeName: [],
+        tutorialComplete: false,
+        lectureComplete: false,
+        editor: null,
+        runResult: 'N/A',
+        courseList: [],
+      }
+    },
+    created() {
+      this.getCourseList()
+    },
+    mounted() {
+      /*this.editor.setValue(`import pandas as pd
+import matplotlib.pyplot as plt
+
+result = []
+df = pd.read_csv('static/customer_sales_data.csv')
+
+# Preview data
+print(df.head())
+
+df['OrderDate'] = pd.to_datetime(df['OrderDate'])
+df.dropna(inplace=True)
+
+# Customer segmentation: Classify customers according to the amount of money they spend
+customer_summary = df.groupby('CustomerID').agg({'TotalAmount': 'sum', 'OrderID': 'count'})
+customer_summary.rename(columns={'OrderID': 'OrderCount', 'TotalAmount': 'TotalSpent'}, inplace=True)
+
+# Defining high-value customers (customers in the top 20% of total spending)
+high_value_threshold = customer_summary['TotalSpent'].quantile(0.80)
+high_value_customers = customer_summary[customer_summary['TotalSpent'] > high_value_threshold]
+print("High value customer：")
+print(high_value_customers)
+
+top_products = df.groupby('ProductName').agg({'Quantity': 'sum'}).sort_values(by='Quantity', ascending=False)
+print("Best-selling product：")
+print(top_products.head(10))
+`)*/
+    },
+    watch: {
+    },
+    methods: {
+      onRunCode(courseId) {
+        fetchPost('/chat/runcode', {
+          userId: localStorage.getItem('userId'),
+          courseId,
+          code: this.editor.getValue()
+        }).then(data => {
+          this.runResult = data.result
+        })
+      },
+      getCourseList() {
+        fetchGet('/courses?userId='+localStorage.getItem('userId')).then(data => {
+          this.courseList = data.data
+        })
+      },
+      handleSelect(key) {
+        if(key === 'courseList') {
+          return
+        }
+        window.location.href = key + '.html'
+      },
+      analyze(type,courseId) {
+        window.location.href = 'chat.html?type=' + type + '&courseId=' + courseId
+      },
+      onCollapseChange(activeName) {
+        if(activeName) {
+          this.editor = CodeMirror.fromTextArea(document.getElementById("code-" + activeName), {
+            mode: 'python',
+            theme: "night",
+            smartIndent: true,
+            indentUnit: 4,
+            autofocus: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+          });
+          console.log(this.editor)
+          this.editor.on('keypress', () => {
+            this.editor.showHint()
+          })
+          const item = this.courseList.find(x => x.id === activeName)
+          this.editor.setValue(item.code)
+        }
+      },
+      onComplete(courseId) {
+        this.$confirm('Are you sure you are done?', 'Message', {
+          confirmButtonText: 'Completion',
+          cancelButtonText: 'Close',
+          type: 'warning'
+        }).then(() => {
+          fetchPost('/complete', {
+            courseId: courseId
+          }).then(data => {
+
+          })
+        })
+      }
+    }
+  })
+</script>
+</body>
+
+</html>

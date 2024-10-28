@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/chat.css"/>
+
+</head>
+
+<body>
+<div id="app">
+  <el-container>
+    <el-aside width="200px">
+      <div class="logo-text">ONES</div>
+      <ai-menu active="chat"></ai-menu>
+    </el-aside>
+    <el-container>
+      <el-header>
+        <ai-header>Chat with AI</ai-header>
+      </el-header>
+
+      <el-main>
+        <div class="chat-container">
+          <div ref="chatResultRef" class="chat-content">
+            <div class="row" v-for="(item, index) in chatHistory" :key="index">
+              <div v-if="item.role === 'user'" style="visibility: hidden"></div>
+              <div v-if="item.role === 'user'">
+                <img src="image/person.png" style="vertical-align: bottom;">
+                {{item.content}}
+              </div>
+              <div v-if="item.role === 'system'">
+                <img src="image/robot.png" style="vertical-align: bottom;">
+                {{item.content}}
+              </div>
+              <div v-if="item.role === 'system'" style="visibility: hidden"></div>
+            </div>
+            <div style="height: 100px">&nbsp;</div>
+          </div>
+          <el-input v-model="inquiry" class="send-chat" placeholder="Type something to chat...">
+            <template slot="append">
+              <i class="el-icon-s-promotion" @click="sendInquiry"/>
+            </template>
+          </el-input>
+        </div>
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script src="js/ai-component.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        inquiry: null,
+        chatHistory: [
+          {role: 'system', content: "Hi, i am a chatbot, how can I help you?"},
+        ],
+      }
+    },
+    created() {
+    },
+    mounted() {
+      document.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+          this.sendInquiry()
+        }
+      })
+
+      if(location.search) {
+        const params = new URLSearchParams(location.search)
+        this.sendInquiry(params.get('type'), params.get('courseId'))
+      }
+    },
+    watch: {
+    },
+    methods: {
+      sendInquiry(type = 0, courseId) {
+        if(type === 0 && !this.inquiry) {
+          this.$message({
+            type: 'error ', message: 'Input cannot be empty'
+          })
+          return
+        }
+
+        let inquiry = this.inquiry
+        this.inquiry = null
+        if(type === '1') {
+          inquiry = 'Summarize the lecture contents'
+        } else if(type === '2'){
+          inquiry = 'Create a study plan'
+        } else if(type === '3'){
+          inquiry = 'Analyzing the code'
+        }
+
+        this.chatHistory.push({role: 'user', content: inquiry})
+
+        fetchPost('/chat/completion', {
+          type,
+          inquiry,
+          courseId,
+          user_id: localStorage.getItem('userId')
+        }).then(data => {
+          this.chatHistory.push({role:'system', content: data.answer})
+          this.scrollBottom('chatResultRef')
+        })
+      },
+      scrollBottom(id) {
+        this.$nextTick(() => {
+          const ele = this.$refs[id]
+          if (ele) ele.scrollTop = ele.scrollHeight
+        })
+      },
+      handleSelect(key) {
+        if(key === 'chat') {
+          return
+        }
+        window.location.href = key + '.html'
+      },
+    }
+  })
+</script>
+</body>
+
+</html>

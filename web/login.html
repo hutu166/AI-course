@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register</title>
+
+  <link rel="stylesheet" href="css/element-2.15.14.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    #app {
+      padding: 20px;
+    }
+    .sign-up-text {
+      text-align: center;
+      color: #03151E;
+    }
+    .el-radio__input.is-checked .el-radio__inner {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .el-radio__input.is-checked+.el-radio__label {
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+
+<body class="login-bg-img">
+<div id="app">
+  <el-row>
+    <el-col :span="15" :offset="4">
+      <span class="logo-text">ONES</span>
+    </el-col>
+    <el-col :span="5">
+      <el-button type="primary" size="mini" class="bg-black" round @click="loginPage = true">Login</el-button>
+      <el-button type="primary" size="mini" class="bg-black" round @click="loginPage = false">Sign-up</el-button>
+    </el-col>
+  </el-row>
+  <el-row v-if="loginPage" style="margin-top: 80px;">
+    <el-col :span="6" :offset="9">
+      <el-card>
+        <h3>Login</h3>
+        <el-form :model="loginForm">
+          <el-form-item >
+            <el-input type="text" v-model="loginForm.email" placeholder="E-mail"></el-input>
+          </el-form-item>
+          <el-form-item >
+            <el-input type="password" v-model="loginForm.password" autocomplete="off" placeholder="Password"></el-input>
+          </el-form-item>
+          <el-form-item >
+            <el-radio-group v-model="loginForm.role">
+              <el-radio label="student">Student</el-radio>
+              <el-radio label="teacher">Teacher</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onLogin" style="width: 100%;" class="bg-btn-green">Login</el-button>
+          </el-form-item>
+          <el-form-item>
+            <div class="sign-up-text">Don't have an account?
+              <el-button type="text" style="color:var(--primary-color);" @click="loginPage = false">Sign up!</el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </el-col>
+  </el-row>
+
+  <el-row v-else>
+    <el-col :span="12" :offset="6">
+      <h1 style="text-align: center;font-size: 42px;">Register with ONES</h1>
+
+      <el-card>
+        <h3>Account Information</h3>
+        <el-form :model="registerForm" status-icon :rules="rules" ref="form" label-width="100px">
+          <el-form-item label="Email" prop="email">
+            <el-input type="text" v-model="registerForm.email"></el-input>
+          </el-form-item>
+          <el-form-item label="Password" prop="password">
+            <el-input type="password" v-model="registerForm.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="First Name" prop="firstName">
+            <el-input type="text" v-model="registerForm.firstName"></el-input>
+          </el-form-item>
+          <el-form-item label="Last Name" prop="lastName">
+            <el-input type="text" v-model="registerForm.lastName"></el-input>
+          </el-form-item>
+          <el-form-item style="text-align: right;">
+            <el-button type="primary" @click="onRegister" class="bg-btn-green">Start My Learning</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </el-col>
+  </el-row>
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="js/element-2.15.14.js"></script>
+<script src="js/ai-component.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        loginPage: true,
+        loginForm: {
+          email: null,
+          password: null,
+          role: 'student',
+        },
+        registerForm: {
+          email: null,
+          password: null,
+          firstName: null,
+          lastName: null,
+          role: 'student',
+        },
+        rules: {
+          email: [
+            { required: true, message: 'Input email', trigger: 'blur' },
+            {
+              pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              message: 'Email format not valid',
+              trigger: 'blur',
+            },
+          ],
+          password: [
+            { required: true,message: 'Input username', trigger: 'blur' },
+            {
+              pattern: /^(?=.*[a-zA-Z])(?=.*[0-9]).{6,}$/,
+              message: 'The password must be at least 6 characters long and must contain letters and numbers',
+              trigger: 'blur',
+            },
+          ],
+        },
+      }
+    },
+    created() {
+    },
+    methods: {
+      onLogin() {
+        if(!this.loginForm.email || !this.loginForm.password) {
+          this.$message.error('Email and password are required');
+          return
+        }
+        fetchPost('/login', this.loginForm).then(data => {
+            if (data.code === 0) {
+              localStorage.setItem("userId", data.data.id)
+              localStorage.setItem("email", data.data.email)
+              localStorage.setItem("firstName", data.data.firstName)
+              localStorage.setItem("lastName", data.data.lastName)
+              localStorage.setItem("role", data.data.role)
+              window.location.href = '/chat.html'
+            } else {
+              this.$message.error('Invalid email or password');
+            }
+          })
+      },
+      onRegister() {
+        this.$refs.form.validate((valid) => {
+          if (valid) {
+            fetchPost('/register', this.registerForm).then(data => {
+                if (data.code === 0) {
+                  this.$message.success('Registration successful, please login');
+                  this.loginPage = true;
+                } else {
+                  this.$message.error('Registration failed, please try again later');
+                }
+            })
+          }
+        })
+      }
+    }
+  })
+</script>
+</body>
+
+</html>
